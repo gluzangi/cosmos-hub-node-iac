@@ -1,0 +1,4 @@
+---
+# tasks file for playbooks/roles/cosmos-node
+- debug:
+    msg: "hello cosmos-node"

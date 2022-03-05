@@ -6,3 +6,4 @@
   roles:
     - log
     - cosmos
+    - cosmos-node
