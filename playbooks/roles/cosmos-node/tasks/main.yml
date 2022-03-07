@@ -1,4 +1,306 @@
 ---
 # tasks file for playbooks/roles/cosmos-node
 - debug:
-    msg: "hello cosmos-node"
+    msg: "{{ ansible_lsb }}"
+
+- debug:
+    msg: "{{ ansible_facts.env }}"
+
+# - debug:
+#     msg: "{{ ansible_facts.python_version }}"
+
+# - name: print host env
+#   ansible.builtin.debug:
+#     var: ansible_facts.env
+
+# - name: get docker host manager info
+#   docker_host_info:
+#     disk_usage: yes
+#   register: node
+
+# - debug:
+#     var: node.host_info
+
+#- name: send notification message via Slack all options
+#  local_action:
+#    module: slack
+#    token: xoxp-18327347668-25662172612-84008820820-782d885df5519f45cce59efe6c4a9a3d
+#    # token: https://hooks.slack.com/services/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
+#    domain: vertumnus.slack.com
+#    channel: "#devops_bmo"
+#    msg: "{{ inventory_hostname }} completed"
+#    username: "Ansible on {{ inventory_hostname }}"
+#    # username: "gluzangi"
+#    icon_url: "https://www.ansible.com/favicon.ico"
+#    link_names: 0s
+#    parse: 'none'
+
+# - name: run a script using an executable in a system path
+#   ansible.builtin.script: /some/local/script.py
+#   args:
+#     executable: python3
+
+# - name: register loop output as a variable
+#   ansible.builtin.shell: "echo {{ item }}"
+#   loop:
+#     - "one"
+#     - "two"
+#   register: echo
+
+# determine if a path exists and is a directory.  Note that we need to test
+# both that p.stat.isdir actually exists, and also that it's set to true.
+#
+# - name: Get stats of the FS object
+#   ansible.builtin.stat:
+#     path: /path/to/something
+#   register: p
+# - name: Print a debug message
+#   ansible.builtin.debug:
+#     msg: "Path exists and is a directory"
+#   when: p.stat.isdir is defined and p.stat.isdir
+
+# - name: get stats of a file
+#   ansible.builtin.stat:
+#     path: "/usr/local/go"
+#   register: st
+
+# - name: fail if the file does not belong to 'root'
+#   ansible.builtin.fail:
+#     msg: "Whoops! file ownership has changed"
+#   when: st.stat.pw_name != 'root'
+
+# - name: Do not do checksum
+#   ansible.builtin.stat:
+#     path: /path/to/myhugefile
+#     get_checksum: no
+
+# - name: Use sha256 to calculate checksum
+#   ansible.builtin.stat:
+#     path: /path/to/something
+#     checksum_algorithm: sha256
+
+# - name: download and install "golang"
+#   get_url:
+#     url: https://go.dev/dl/go1.17.8.src.tar.gz
+#     dest: /usr/local/bin/go
+#     mode: 0755
+
+#  - name: download umbrel - lightning network node
+#    unarchive:
+#      src: https://github.com/getumbrel/umbrel/archive/v0.4.9.tar.gz
+#      dest: "{{ lightning_node_dir }}"
+#      extra_opts: [--strip-components=1]
+#      remote_src: yes
+
+#    - name: start umbrel node
+#      shell: {{lightning_node_dir}}/scripts/start'
+
+# - name: install ntp
+#   ansible.builtin.apt:
+#     name: ntp
+#     state: present
+#   tags: ntp
+
+# - name: configure ntp
+#   ansible.builtin.template:
+#     src: ntp.conf.j2
+#     dest: /etc/ntp.conf
+#   notify:
+#   - restart ntpd
+#   tags: ntp
+
+# - name: enable and run ntpd
+#   ansible.builtin.service:
+#     name: ntpd
+#     state: started
+#     enabled: yes
+#   tags: ntp
+
+
+#
+# setup cosmos-sdk environment
+#
+- name: setup shell "aliases" for "cosmos-setup" dir
+  blockinfile:
+    path: /{{ sa_user }}/.bashrc
+    block: |
+      alias cosmos-setup='cd /tmp/ansible'
+  tags: setup
+
+- name: setup bash_profile ENV of "service-account-user"
+  blockinfile:
+    create: yes
+    path: /{{ sa_user }}/.profile
+    block: |
+      export GAIAD_HOME="/{{ sa_user }}/go"
+      export GOLANG_HOME="/usr/local/go"
+      export PATH=$GAIAD_HOME/bin:$GOLANG_HOME/bin:$PATH
+    owner: "{{ sa_user }}"
+    group: "{{ sa_user }}"
+  tags: setup
+
+- name: apply "service-account-user" custom ENV setup
+  shell: |
+    source /{{ sa_user }}/.profile
+  args:
+    executable: /bin/bash
+  tags: setup
+
+- name: check "golang-libs" folder existence
+  stat:
+    path: /usr/local/go
+  register: golang_dir
+  tags: setup
+
+# - debug:
+#     var: golang_dir
+#   tags: setup
+
+- debug:
+    msg: "path exists and is a directory"
+  when: golang_dir.stat.isdir is defined and golang_dir.stat.isdir
+  tags: setup
+
+- name: setup "golang-libs" folder
+  file:
+    path: /usr/local/go
+    state: directory
+    recurse: yes
+    mode: 0775
+  when: golang_dir.stat.isdir is not defined
+  tags: setup
+
+- name: setup cosmos-sdk building/supporting libs
+  apt: name={{ item }} state=latest
+  loop:
+    - git
+    - vim
+  tags: setup
+
+#
+# run "golang" and "cosmos-sdk" installation
+#
+- stat:
+    path: /usr/local/go
+  register: golang_dir
+  tags: install
+
+# - debug:
+#     var: golang_dir
+#   tags: install
+
+- fail:
+    msg: "whoops! initialize with './bin/provision -t setup'"
+  when: golang_dir.stat.isdir is not defined
+  tags: install
+
+- name: download and install "golang"
+  unarchive:
+    src: https://go.dev/dl/go1.17.8.linux-amd64.tar.gz
+    dest: /usr/local/go
+    extra_opts: ['--strip-components=1']
+    remote_src: yes
+  tags: install
+
+- name: download and install "cosmos-sdk"
+  shell: |
+    source /{{ sa_user }}/.profile
+    rm -rf  /{{ sa_user }}/{gaia,go}
+    cd /{{ sa_user }} && git clone -b {{ cosmos_sdk_ver }} https://github.com/cosmos/gaia
+    cd /{{ sa_user }}/gaia && make install
+  args:
+    executable: /bin/bash
+  tags: install
+
+#
+# REF : https://phoenixnap.com/kb/ansible-check-if-file-exists
+#
+#
+# check/verify "cosmos-sdk" installation
+#
+- stat:
+    path: /{{ sa_user }}/go/bin/gaiad
+  register: gaiad_bin
+  tags: check
+
+# - debug:
+#     var: gaiad_bin
+#   tags: check
+
+- fail:
+    msg: "whoops! cosmos-sdk is yet to be installed"
+  when: gaiad_bin.stat.isreg is not defined
+  tags: check
+
+- name: check "cosmos-sdk" installation
+  shell: |
+    /{{ sa_user }}/go/bin/gaiad version
+  register: gaiad_ver
+  tags: check
+
+- debug:
+    var: gaiad_ver
+  tags: check
+
+#
+# check/verify "golang" installation
+#
+- stat:
+    path: /usr/local/go/bin/go
+  register: golang_bin
+  tags: check
+
+# - debug:
+#     var: golang_bin
+#   tags: check
+
+- fail:
+    msg: "whoops! golang is yet to be installed"
+  when: golang_bin.stat.isreg is not defined
+  tags: check
+
+- name: check "golang" installation
+  shell: |
+    /usr/local/go/bin/go version
+  register: golang_ver
+  tags: check
+
+- debug:
+    var: golang_ver
+  tags: check
+
+#
+# bootstrap cosmos-hub node
+#
+- name: initialize "cosmos-hub-4-node"
+  shell: |
+    source /{{ sa_user }}/.profile
+    gaiad init figment-node
+  args:
+    executable: /bin/bash
+  register: gaiad_init
+  tags: bootstrap
+
+- debug:
+    var: gaiad_init
+  tags: bootstrap
+
+
+# # Prepare genesis file for cosmoshub-4
+# wget https://github.com/cosmos/mainnet/raw/master/genesis.cosmoshub-4.json.gz
+# gzip -d genesis.cosmoshub-4.json.gz
+# mv genesis.cosmoshub-4.json $HOME/.gaia/config/genesis.json
+
+# #Set minimum gas price & peers
+# sed -i'' 's/minimum-gas-prices = ""/minimum-gas-prices = "0.0025uatom"/' $HOME/.gaia/config/app.toml
+# sed -i'' 's/persistent_peers = ""/persistent_peers = "6e08b23315a9f0e1b23c7ed847934f7d6f848c8b@165.232.156.86:26656,ee27245d88c632a556cf72cc7f3587380c09b469@45.79.249.253:26656,538ebe0086f0f5e9ca922dae0462cc87e22f0a50@34.122.34.67:26656,d3209b9f88eec64f10555a11ecbf797bb0fa29f4@34.125.169.233:26656,bdc2c3d410ca7731411b7e46a252012323fbbf37@34.83.209.166:26656,585794737e6b318957088e645e17c0669f3b11fc@54.160.123.34:26656,5b4ed476e01c49b23851258d867cc0cfc0c10e58@206.189.4.227:26656"/' $HOME/.gaia/config/config.toml
+
+# # Configure State sync
+# cd $HOME/.gaia/config
+# sed -i'' 's/enable = false/enable = true/' $HOME/.gaia/config/config.toml
+# sed -i'' 's/trust_height = 0/trust_height = <BLOCK_HEIGHT>/' $HOME/.gaia/config/config.toml
+# sed -i'' 's/trust_hash = ""/trust_hash = "<BLOCK_HASH>"/' $HOME/.gaia/config/config.toml
+# sed -i'' 's/rpc_servers = ""/rpc_servers = "https:\/\/rpc.cosmos.network:443,https:\/\/rpc.cosmos.network:443"/' $HOME/.gaia/config/config.toml
+
+# #Start Gaia
+# gaiad start --x-crisis-skip-assert-invariants

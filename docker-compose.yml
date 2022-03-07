@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: cosmos-node
+    hostname: cosmos-node
     tmpfs:
       - /tmp
       - /run
