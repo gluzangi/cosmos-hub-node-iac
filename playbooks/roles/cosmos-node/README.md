@@ -1,5 +1,5 @@
-Role Name - COSMOS NODE
-========================
+### COSMOS NODE ROLE
+--------------------
 
 This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running as the figment user. The role only needs to start the process of syncing it does not need to preform the binary change at height 6910000. Primary role capabilities are :
 
@@ -7,25 +7,25 @@ This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running 
 - To init a new node
 - To provide the ability to update the binary in future if required
 
-Requirements
-------------
+#### Requirements
+-----------------
 
 - Go 1.16+ or later is required for the Cosmos SDK.
 - Ansible 4.0+
 - Python 3.6+
 
-Role Variables
---------------
+#### Role Variables
+-------------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The settable variables for this role should go into vars/main.yml, and any variables that can/should be set via parameters to the role. At the minimum Service-Account-User and $HOME
+with a corresponding cosmos-SDK version can set as following:-
 
-Dependencies
-------------
+- sa_user: "figment"
+- sa_user_home: "/home/figment"
+- cosmos_sdk_ver: "v6.0.0"
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Playbook Execution Examples
----------------------------
+#### Playbook Execution Examples
+--------------------------------
 
 - Here are examples on how to run/use this playbook:
 
@@ -54,15 +54,9 @@ Playbook Execution Examples
 # sync cosmos-sdk node
 #
 ./bin/provision -t sync
-
 ```
 
-License
--------
+#### Author
+-----------
 
-BSD
-
-Author Information - Gerald Luzangi
------------------------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+- Gerald Luzangi
