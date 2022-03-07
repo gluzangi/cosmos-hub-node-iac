@@ -1,5 +1,5 @@
 ---
 # vars file for playbooks/roles/cosmos-node
-home_dir: "/home/figment"
-sa_user: "root"
-cosmos_sdk_ver: "v6.0.0"
+sa_user: "figment"
+sa_user_home: "/home/figment"
+cosmos_sdk_ver: "v4.2.1"

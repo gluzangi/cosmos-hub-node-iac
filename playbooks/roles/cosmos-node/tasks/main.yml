@@ -122,7 +122,7 @@
 #
 - name: setup shell "aliases" for "cosmos-setup" dir
   blockinfile:
-    path: /{{ sa_user }}/.bashrc
+    path: "{{ sa_user_home }}/.bashrc"
     block: |
       alias cosmos-setup='cd /tmp/ansible'
   tags: setup
@@ -130,9 +130,9 @@
 - name: setup bash_profile ENV of "service-account-user"
   blockinfile:
     create: yes
-    path: /{{ sa_user }}/.profile
+    path: "{{ sa_user_home }}/.profile"
     block: |
-      export GAIAD_HOME="/{{ sa_user }}/go"
+      export GAIAD_HOME="{{ sa_user_home }}/go"
       export GOLANG_HOME="/usr/local/go"
       export PATH=$GAIAD_HOME/bin:$GOLANG_HOME/bin:$PATH
     owner: "{{ sa_user }}"
@@ -141,7 +141,7 @@
 
 - name: apply "service-account-user" custom ENV setup
   shell: |
-    source /{{ sa_user }}/.profile
+    source {{ sa_user_home }}/.profile
   args:
     executable: /bin/bash
   tags: setup
@@ -174,6 +174,7 @@
   apt: name={{ item }} state=latest
   loop:
     - git
+    - tree
     - vim
   tags: setup
 
@@ -185,12 +186,18 @@
   register: golang_dir
   tags: install
 
+# - stat:
+#     path: "{{ sa_user_home }}/go"
+#   register: gaiad_dir
+#   tags: install
+
 # - debug:
-#     var: golang_dir
+#     var: gaiad_dir
 #   tags: install
 
 - fail:
     msg: "whoops! initialize with './bin/provision -t setup'"
+  # when: golang_dir.stat.isdir is not defined or gaiad_dir.stat.isdir is not defined
   when: golang_dir.stat.isdir is not defined
   tags: install
 
@@ -204,12 +211,14 @@
 
 - name: download and install "cosmos-sdk"
   shell: |
-    source /{{ sa_user }}/.profile
-    rm -rf  /{{ sa_user }}/{gaia,go}
-    cd /{{ sa_user }} && git clone -b {{ cosmos_sdk_ver }} https://github.com/cosmos/gaia
-    cd /{{ sa_user }}/gaia && make install
+    source {{ sa_user_home }}/.profile
+    rm -rf {{ sa_user_home }}/{gaia,go}
+    cd {{ sa_user_home }} && git clone -b {{ cosmos_sdk_ver }} https://github.com/cosmos/gaia
+    cd {{ sa_user_home }}/gaia && make install
   args:
     executable: /bin/bash
+  become_method: su
+  become_user: "{{ sa_user }}"
   tags: install
 
 #
@@ -219,7 +228,7 @@
 # check/verify "cosmos-sdk" installation
 #
 - stat:
-    path: /{{ sa_user }}/go/bin/gaiad
+    path: "{{ sa_user_home }}/go/bin/gaiad"
   register: gaiad_bin
   tags: check
 
@@ -234,7 +243,7 @@
 
 - name: check "cosmos-sdk" installation
   shell: |
-    /{{ sa_user }}/go/bin/gaiad version
+    {{ sa_user_home }}/go/bin/gaiad version
   register: gaiad_ver
   tags: check
 
@@ -274,11 +283,13 @@
 #
 - name: initialize "cosmos-hub-4-node"
   shell: |
-    source /{{ sa_user }}/.profile
-    gaiad init figment-node
+    source {{ sa_user_home }}/.profile
+    gaiad init figment-node --overwrite
   args:
     executable: /bin/bash
   register: gaiad_init
+  # become_method: su
+  # become_user: "{{ sa_user }}"
   tags: bootstrap
 
 - debug:
