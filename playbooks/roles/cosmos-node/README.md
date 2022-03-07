@@ -1,12 +1,18 @@
 Role Name - COSMOS NODE
 ========================
 
-A brief description of the role goes here.
+This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running as the figment user. The role only needs to start the process of syncing it does not need to preform the binary change at height 6910000. Primary role capabilities are :
+
+- To build the required binary from source
+- To init a new node
+- To provide the ability to update the binary in future if required
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Go 1.16+ or later is required for the Cosmos SDK.
+- Ansible 4.0+
+- Python 3.6+
 
 Role Variables
 --------------
@@ -18,14 +24,38 @@ Dependencies
 
 A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
-Example Playbook
-----------------
+Playbook Execution Examples
+---------------------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+- Here are examples on how to run/use this playbook:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```bash
+#
+# check for cosmos-sdk installation
+#
+./bin/provision -t check
+
+#
+# run cosmos-sdk installation
+#
+./bin/provision -t install
+
+#
+# setup cosmos-sdk runtime environment
+#
+./bin/provision -t setup
+
+#
+# initialize cosmos-sdk node
+#
+./bin/provision -t bootstrap
+
+#
+# sync cosmos-sdk node
+#
+./bin/provision -t sync
+
+```
 
 License
 -------
