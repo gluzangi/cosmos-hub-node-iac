@@ -1,2 +1,9 @@
 ---
 # handlers file for playbooks/roles/cosmos-node
+- name: reload systemd daemon
+  systemd: daemon_reload=yes
+  listen: "restart gaiad"
+
+- name: restart gaiad daemon
+  systemd: name=gaiad state=restarted
+  listen: "restart gaiad"

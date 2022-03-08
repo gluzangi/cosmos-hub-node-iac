@@ -3,3 +3,5 @@
 sa_user: "figment"
 sa_user_home: "/home/figment"
 cosmos_sdk_ver: "v6.0.0"
+block_height: "9672930"
+block_hash: "0BA9E883DCED83A35CF7913448C65367D3151BD1CF281D0155312F057881A68B"

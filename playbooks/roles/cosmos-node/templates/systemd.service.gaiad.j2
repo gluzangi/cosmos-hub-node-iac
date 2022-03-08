@@ -1,0 +1,16 @@
+#
+# systemd-setup-file: /etc/systemd/system/gaiad.service
+#
+[Unit]
+Description=Gaia Daemon
+After=network-online.target
+
+[Service]
+User={{ sa_user }}
+ExecStart={{ sa_user_home }}/go/bin/gaiad start
+Restart=always
+RestartSec=3
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

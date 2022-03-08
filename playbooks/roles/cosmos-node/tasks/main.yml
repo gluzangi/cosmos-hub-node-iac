@@ -289,7 +289,7 @@
 #
 # bootstrap cosmos-hub node
 #
-- name: initialize "cosmos-hub-4-node"
+- name: initialize chain "cosmos-hub-4"
   shell: |
     source {{ sa_user_home }}/.profile
     gaiad init figment-node --overwrite
@@ -330,6 +330,48 @@
 - debug:
     var: cosmos_sync_v6
   tags: sync
+
+# - name: create a drop-in systemd docker config folder
+#   file:
+#     path: /etc/systemd/system/docker.service.d/
+#     state: directory
+#     mode: 0755
+
+# - name: configure docker host options
+#   template:
+#     src: templates/override.conf.j2
+#     dest: /etc/systemd/system/docker.service.d/override.conf
+
+# - name: configure docker-engine options
+#   template:
+#     src: templates/daemon.json.j2
+#     dest: /etc/docker/daemon.json
+#   notify:
+#     - "restart docker"
+
+- name: add cosmos-hub-4 systemd unit file
+  template:
+    src: systemd.service.gaiad.j2
+    dest: /etc/systemd/system/gaiad.service
+  notify:
+    - "restart gaiad"
+  tags: run
+
+- name: add gaiad-config-toml config file
+  template:
+    src: gaiad.config.toml.j2
+    dest: "{{ sa_user_home }}/.gaia/config/config.toml"
+  notify:
+    - "restart gaiad"
+  tags: run
+
+# - name: start added service and enable at boot time
+#   systemd:
+#     name: gaiad
+#     state: started
+#     daemon_reload: yes
+#     enabled: yes
+#   tags: run
 
 # - name: run cosmos-sdk start/stop scripts
 #   script: figment-setup.py
