@@ -16,16 +16,46 @@ This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running 
 - Docker 20.10+
 - docker-compose 1.28+
 
+#### Launch Dockerized DEV-ENV
+------------------------------
+
+```bash
+#
+# start docker-compose :- 
+# 
+# - will start up a container running SYSTEMD
+# - current directory is bind mounted into "/tmp/ansible"
+#
+docker-compose up -d
+
+#
+# exec into the docker container
+#
+docker-compose exec ops-challenge /bin/bash
+
+#
+# run ansible using
+#
+./bin/provision
+
+#
+# To stop the container and get a fresh container just run
+#
+# docker-compose down -t 0
+#
+# docker-compose up --force-recreate -d
+```
+
 #### Role Variables
 -------------------
 
 The settable variables for this role should go into vars/main.yml, and any variables that can/should be set via parameters to the role. Minimum requirements to launch a node with Service-Account-User running a particular cosmos-SDK version can be set as follows :-
 
-- sa_user: "figment"
-- sa_user_home: "/home/figment"
-- cosmos_sdk_ver: "v6.0.0"
-- block_height: "9672930"
-- block_hash: "0BA9E883DCED83A35CF7913448C65367D3151BD1CF281D0155312F057881A68B"
+- `sa_user: "figment"`
+- `sa_user_home: "/home/figment"`
+- `cosmos_sdk_ver: "v6.0.0"`
+- `block_height: "9672930"`
+- `block_hash: "0BA9E883DCED83A35CF7913448C65367D3151BD1CF281D0155312F057881A68B"`
 
 #### Playbook Execution Examples
 --------------------------------
