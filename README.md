@@ -1,67 +1,65 @@
-# Figment Ops Challenge
+### COSMOS NODE IaC
+--------------------
 
-Hello there! This challenge involves bootstraping and monitoring a new [Cosmos](https://cosmos.network/) node using Docker. We've set up this simple skeleton repo to give you a starting point. Feel free to modify any of this how you see fit!
+This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running as the figment user. The role only needs to start the process of syncing it does not need to preform the binary change at height 6910000. Primary role capabilities are :
 
-While the use of Docker and Ansible here might look like an odd choice it's only for ease of use during the tech test.  Docker in this case gives a prebuilt env with all the tools needed for ansible to run as well as handling ambiguities of architecture.  In our actual systems we are using Ansible with both bare metal servers and VMs.
+- To build the required binary from source
+- To init a new node
+- To provide the ability to update the binary in future if required
 
-**If you have an M1 Mac you will need to make sure you have the latest version of Docker Desktop as x86_64 compatablity is required**
+#### Requirements
+-----------------
 
-Download the zip of this repo, carefully read and follow the below outline, then send us a zip of your solution.
+- Go 1.16+ or later is an essential requirement for the cosmos-SDK.
+- Ansible 4.0+
+- Python 3.6+
+- Docker 20.10+
+- docker-compose 1.28+
 
+#### Role Variables
+-------------------
 
-## Using this Skeleton
+The settable variables for this role should go into vars/main.yml, and any variables that can/should be set via parameters to the role. Minimum requirements to launch a node with Service-Account-User running a particular cosmos-SDK version can be set as follows :-
 
-Prerequisites:
+- sa_user: "figment"
+- sa_user_home: "/home/figment"
+- cosmos_sdk_ver: "v6.0.0"
+- block_height: "9672930"
+- block_hash: "0BA9E883DCED83A35CF7913448C65367D3151BD1CF281D0155312F057881A68B"
 
-- docker
-- docker-compose
+#### Playbook Execution Examples
+--------------------------------
 
-Start docker-compose
+- Here are examples on how to run/use this playbook:
 
+```bash
+#
+# check for cosmos-sdk installation
+#
+./bin/provision -t check
+
+#
+# run cosmos-sdk installation
+#
+./bin/provision -t install
+
+#
+# setup cosmos-sdk runtime environment
+#
+./bin/provision -t setup
+
+#
+# initialize cosmos-sdk node
+#
+./bin/provision -t bootstrap
+
+#
+# sync cosmos-sdk node
+#
+./bin/provision -t sync
 ```
-docker-compose up -d
-```
 
-This will start up a container running Systemd with the current directory mounted into `/tmp/ansible` ready to be used
+#### Author
+-----------
 
-Exec into the docker container
-
-```
-docker-compose exec ops-challenge /bin/bash
-```
-
-Run ansible
-
-```
-./bin/provision
-```
-
-You can now make changes in the repo and run them within the container as needed.
-
-To stop the container and get a fresh container just run
-
-```
-docker-compose down -t 0
-docker-compose up --force-recreate -d
-```
-
-
-## Requirements
-
-Write an ansible role which deploys a [Cosmos mainnet (Hub 4) node](https://github.com/cosmos/mainnet) to the docker container running as the figment user.  **The role only needs to start the process of syncing it does not need to preform the binary change at height 6910000**.
-
-The role should:
-- Build the required binary from source
-- Init a new node
-- Provide the ability to update the binary in future if required
-
-Keep these important aspects in mind:
-
-- **Idempotency** - running the role after initial setup or anytime thereafter should not interfere with node operations
-- **Configurability** - it'd be nice to be able to set useful options in variables (for example a list of persistent peers)
-- **Resiliency** - the node should be run as a systemd service which will restart after crashes
-
-
-Once you've got the node syncing, prove it! Write a simple monitoring script in Python, also deployed via ansible and also a systemd service. It should:
- - Retrieve the latest block height synced by the node (pst, [check this out](https://docs.tendermint.com/master/rpc/))
- - Report it using a Prometheus/openmetrics endpoint.
+- Gerald Luzangi

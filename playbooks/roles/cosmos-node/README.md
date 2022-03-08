@@ -16,6 +16,33 @@ This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running 
 - Docker 20.10+
 - docker-compose 1.28+
 
+#### Launch Dockerized DEV-ENV
+------------------------------
+
+```bash
+#
+# start docker-compose - this will start up a container running Systemd with the current directory mounted into /tmp/ansible ready to be used
+#
+docker-compose up -d
+
+#
+# exec into the docker container
+#
+docker-compose exec ops-challenge /bin/bash
+
+#
+# run ansible
+#
+./bin/provision
+
+#
+# To stop the container and get a fresh container just run
+#
+# docker-compose down -t 0
+
+# docker-compose up --force-recreate -d
+```
+
 #### Role Variables
 -------------------
 
