@@ -1,7 +1,7 @@
 ### COSMOS NODE IaC
 --------------------
 
-This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running as the figment user. The role only needs to start the process of syncing it does not need to preform the binary change at height 6910000. Primary role capabilities are :
+This role deploys a Cosmos Mainnet (Hub 4) Node to the docker container running as the figment user. The role only needs to start the process of syncing it does not need to perform the binary change at height 6910000. Primary role capabilities are :
 
 - To build the required binary from source
 - To init a new node
@@ -93,6 +93,11 @@ The settable variables for this role should go into vars/main.yml, and any varia
 # update cosmos-sdk node configuration
 #
 ./bin/provision -t update
+
+#
+# monitor cosmos-sdk node/scrape prometheus
+#
+./bin/provision -t monitor
 
 #
 # NOTE :
