@@ -146,70 +146,112 @@
   tags: check
 
 #
-# bootstrap cosmos-hub node
+# initialize cosmos-hub node
 #
 - name: initialize chain "cosmos-hub-4"
   shell: |
     source {{ sa_user_home }}/.profile
-    gaiad init figment-node --overwrite
+    gaiad init figment-node --overwrite --home "{{ sa_user_home }}/.gaia"
   args:
     executable: /bin/bash
   register: gaiad_init
   become_method: su
   become_user: "{{ sa_user }}"
-  tags: bootstrap
+  tags: init
 
 - debug:
     var: gaiad_init
-  tags: bootstrap
+  tags: init
+
+- name: prepare genesis file for cosmos-hub-4
+  shell: |
+    source {{ sa_user_home }}/.profile
+    wget -c https://github.com/cosmos/mainnet/raw/master/genesis.cosmoshub-4.json.gz --directory-prefix=/tmp/
+    gzip -d /tmp/genesis.cosmoshub-4.json.gz
+    mv /tmp/genesis.cosmoshub-4.json {{ sa_user_home }}/.gaia/config/genesis.json
+    rm -rf /tmp/genesis.cosmoshub-4.json.gz
+  args:
+    executable: /bin/bash
+  register: genesis_init
+  become_method: su
+  become_user: "{{ sa_user }}"
+  tags: init
+
+- debug:
+    var: genesis_init
+  tags: init
+
+- name: customize gaiad-app-toml config file
+  template:
+    src: gaiad.app.toml.j2
+    dest: "{{ sa_user_home }}/.gaia/config/app.toml"
+  tags: init
+
+- name: customize gaiad-config-toml config file
+  template:
+    src: gaiad.config.toml.j2
+    dest: "{{ sa_user_home }}/.gaia/config/config.toml"
+  tags: init
 
 #
 # join and sync cosmos-hub node
 #
-- name: join cosmos-hub network using cosmos-sdk-ver-4
-  script: cosmos-genesis-setup-{{ cosmos_sdk_ver }}.sh
-  args:
-    executable: /bin/bash
-  register: cosmos_sync_v4
-  when: cosmos_sdk_ver == 'v4.2.1'
-  tags: sync
+# - name: join cosmos-hub network using cosmos-sdk-ver-4
+#   script: cosmos-genesis-setup-{{ cosmos_sdk_ver }}.sh
+#   args:
+#     executable: /bin/bash
+#   register: cosmos_sync_v4
+#   when: cosmos_sdk_ver == 'v4.2.1'
+#   tags: sync
 
-- debug:
-    var: cosmos_sync_v4
-  tags: sync
+# - debug:
+#     var: cosmos_sync_v4
+#   tags: sync
 
-- name: join cosmos-hub network using cosmos-sdk-ver-6
-  script: cosmos-genesis-setup-{{ cosmos_sdk_ver }}.sh
-  args:
-    executable: /bin/bash
-  register: cosmos_sync_v6
-  when: cosmos_sdk_ver == 'v6.0.0'
-  tags: sync
+# - name: join cosmos-hub network using cosmos-sdk-ver-6
+#   script: cosmos-genesis-setup-{{ cosmos_sdk_ver }}.sh
+#   args:
+#     executable: /bin/bash
+#   register: cosmos_sync_v6
+#   when: cosmos_sdk_ver == 'v6.0.0'
+#   tags: sync
 
-- debug:
-    var: cosmos_sync_v6
-  tags: sync
+# - debug:
+#     var: cosmos_sync_v6
+#   tags: sync
 
+#
+# launch cosmos-hub node
+#
 - name: add cosmos-hub-4 systemd unit file
   template:
     src: systemd.service.gaiad.j2
     dest: /etc/systemd/system/gaiad.service
+  tags: launch
+
+- name: start added service and enable at boot time
+  systemd:
+    name: gaiad
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: launch
+
+#
+# update cosmos-hub node config
+#
+- name: update cosmos-hub-4 gaiad-app-toml file
+  template:
+    src: gaiad.app.toml.j2
+    dest: "{{ sa_user_home }}/.gaia/config/app.toml"
   notify:
     - "restart gaiad"
-  tags: run
+  tags: update
 
-- name: add gaiad-config-toml config file
+- name: update cosmos-hub-4 gaiad-config-toml file
   template:
     src: gaiad.config.toml.j2
     dest: "{{ sa_user_home }}/.gaia/config/config.toml"
   notify:
     - "restart gaiad"
-  tags: run
-
-# - name: start added service and enable at boot time
-#   systemd:
-#     name: gaiad
-#     state: started
-#     daemon_reload: yes
-#     enabled: yes
-#   tags: run
+  tags: update

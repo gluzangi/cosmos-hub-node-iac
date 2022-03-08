@@ -56,6 +56,7 @@ The settable variables for this role should go into vars/main.yml, and any varia
 - `cosmos_sdk_ver: "v6.0.0"`
 - `block_height: "9672930"`
 - `block_hash: "0BA9E883DCED83A35CF7913448C65367D3151BD1CF281D0155312F057881A68B"`
+- `minimum_gas_prices: "0.0025uatom"`
 
 #### Playbook Execution Examples
 --------------------------------
@@ -81,12 +82,30 @@ The settable variables for this role should go into vars/main.yml, and any varia
 #
 # initialize cosmos-sdk node
 #
-./bin/provision -t bootstrap
+./bin/provision -t init
 
 #
-# sync cosmos-sdk node
+# launch cosmos-sdk node
 #
-./bin/provision -t sync
+./bin/provision -t launch
+
+#
+# update cosmos-sdk node configuration
+#
+./bin/provision -t update
+
+#
+# NOTE :
+#
+# - check the health/state of the running cosmos-hub node daemon :
+#    journalctl -u gaiad.service -n 50 -f
+#
+# - grab container's IPAddress with :
+#    docker container inspect cosmos-node | jq .[].NetworkSettings.Networks | grep -i ipaddress
+#
+# - prometheus listens to port 26660 eg:
+#    http://192.168.192.2:26660/
+#
 ```
 
 #### Author

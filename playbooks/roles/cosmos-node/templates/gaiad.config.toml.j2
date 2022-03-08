@@ -93,7 +93,7 @@ laddr = "tcp://127.0.0.1:26657"
 # A list of origins a cross-domain request can be executed from
 # Default value '[]' disables cors support
 # Use '["*"]' to allow any origin
-cors_allowed_origins = []
+cors_allowed_origins = ["*"]
 
 # A list of methods the client is allowed to use with cross-domain requests
 cors_allowed_methods = ["HEAD", "GET", "POST", ]
@@ -187,7 +187,7 @@ seeds = ""
 persistent_peers = "6e08b23315a9f0e1b23c7ed847934f7d6f848c8b@165.232.156.86:26656,ee27245d88c632a556cf72cc7f3587380c09b469@45.79.249.253:26656,538ebe0086f0f5e9ca922dae0462cc87e22f0a50@34.122.34.67:26656,d3209b9f88eec64f10555a11ecbf797bb0fa29f4@34.125.169.233:26656,bdc2c3d410ca7731411b7e46a252012323fbbf37@34.83.209.166:26656,585794737e6b318957088e645e17c0669f3b11fc@54.160.123.34:26656,5b4ed476e01c49b23851258d867cc0cfc0c10e58@206.189.4.227:26656"
 
 # UPNP port forwarding
-upnp = false
+upnp = true
 
 # Path to address book
 addr_book_file = "config/addrbook.json"
@@ -291,7 +291,7 @@ enable = true
 # For Cosmos SDK-based chains, trust_period should usually be about 2/3 of the unbonding time (~2
 # weeks) during which they can be financially punished (slashed) for misbehavior.
 #
-rpc_servers = "https://rpc.cosmos.network:443,https://rpc.cosmos.network:443"
+rpc_servers = "https://rpc.cosmos.network:443,https://cosmoshub.validator.network/,https://rpc-cosmoshub.blockapsis.com"
 trust_height = "{{ block_height }}"
 trust_hash = "{{ block_hash }}"
 trust_period = "168h0m0s"
@@ -312,7 +312,7 @@ temp_dir = ""
 #   1) "v0" (default) - the legacy fast sync implementation
 #   2) "v1" - refactor of v0 version for better testability
 #   2) "v2" - complete redesign of v0, optimized for testability & readability
-version = "v1"
+version = "v2"
 
 #######################################################
 ###         Consensus Configuration Options         ###
