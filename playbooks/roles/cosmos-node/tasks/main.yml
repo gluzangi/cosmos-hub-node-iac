@@ -255,3 +255,17 @@
   notify:
     - "restart gaiad"
   tags: update
+
+#
+# monitor cosmos-hub node
+#
+- name: monitor cosmos-hub node performance
+  script: cosmos-node-monitor.py
+  args:
+    executable: /usr/bin/python3
+  register: cosmos_monit
+  tags: monitor
+
+- debug:
+    var: cosmos_monit
+  tags: monitor

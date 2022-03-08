@@ -95,6 +95,11 @@ The settable variables for this role should go into vars/main.yml, and any varia
 ./bin/provision -t update
 
 #
+# monitor cosmos-sdk node/scrape prometheus
+#
+./bin/provision -t monitor
+
+#
 # NOTE :
 #
 # - check the health/state of the running cosmos-hub node daemon :
