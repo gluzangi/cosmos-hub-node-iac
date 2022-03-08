@@ -61,6 +61,10 @@ The settable variables for this role should go into vars/main.yml, and any varia
 #### Playbook Execution Examples
 --------------------------------
 
+- To launch a cosmos-hub node, run the ansible provision tool in the precedence order of the following flags : _check,setup,install,init,launch_
+
+- To tuneup a cosmos-hub node, modify to the requirements options in _gaiad.app.toml.j2/gaiad.config.toml.j2_ and run provision tool using flag : _update_
+
 - Here are examples on how to run/use this playbook:
 
 ```bash
